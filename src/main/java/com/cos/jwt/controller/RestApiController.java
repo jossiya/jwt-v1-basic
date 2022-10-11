@@ -32,10 +32,10 @@ public class RestApiController {
     public CustomResponse join(@RequestBody JoinDto joinDto){
         return userService.joinUser(joinDto);
     }
-    @PostMapping("/api/user/login")
-    public CustomResponse<LoginDto> login(@RequestBody LoginDto loginDto, HttpServletResponse response){
-        System.out.println("http : "+response);
-        System.out.println("loginDto = " + loginDto);
-        return CustomResponse.success(loginDto);
-    }
+//    @PostMapping("/api/user/login")
+//    public CustomResponse<LoginDto> login(@RequestBody LoginDto loginDto, HttpServletResponse response){
+//        System.out.println("http : "+response);
+//        System.out.println("loginDto = " + loginDto);
+//        return CustomResponse.success(loginDto);
+//    }
 }
