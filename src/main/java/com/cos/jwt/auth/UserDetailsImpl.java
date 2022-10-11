@@ -1,6 +1,7 @@
 package com.cos.jwt.auth;
 
 import com.cos.jwt.model.User;
+import com.cos.jwt.model.UserRoleEnum;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,21 +16,24 @@ public class UserDetailsImpl implements UserDetails {
     public UserDetailsImpl(User user){
         this.user=user;
     }
-
+    
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         //Collection<? extends GrantedAuthority> 타입으로 변환하는 과정
+        UserRoleEnum userRole = user.getRole();
+        String authority = userRole.getAuthority();
+
+        SimpleGrantedAuthority simpleAuthority = new SimpleGrantedAuthority(authority);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        user.getRoleList().forEach(l->{
-            authorities.add(()->l);
-        });
+        authorities.add(simpleAuthority);
 
         return authorities;
     }
 
     @Override
     public String getPassword() {
+
         return user.getPassword();
     }
 

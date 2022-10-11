@@ -3,9 +3,12 @@ package com.cos.jwt.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.cos.jwt.auth.UserDetailsImpl;
+import com.cos.jwt.dto.LoginDto;
 import com.cos.jwt.model.User;
+import com.cos.jwt.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
-
+import java.util.regex.Pattern;
 
 
 //스프링 시큐리티에서 UsernamePasswordAuthenticationFilter가 있음
@@ -27,6 +30,8 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
+//    private final UserService userService;
+
 
     // /login 요청을 하면 로그인 시도를 위해서 실행되는 함수
     @Override
@@ -38,26 +43,35 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // UserDetailsServiceImpl가 호출 되고 loadUserByUsername이 실행됨 됨
         //3.UserDetailsImpl를 세션에 담고(권한 관리를 위해서
         //4.JTW토큰을 만들어서 응답해주면 됨.
+        ObjectMapper om = new ObjectMapper();
+        LoginDto loginDto=null;
         try {
-            ObjectMapper om = new ObjectMapper();
-            User user=om.readValue(request.getInputStream(),User.class);
+            loginDto=om.readValue(request.getInputStream(),LoginDto.class);
+//            Pattern pattern1 = Pattern.compile("^([a-zA-Z0-9]*)$");
+//            if(!pattern1.matcher(loginDto.getUsername()).matches() || loginDto.getUsername().length() < 4){
+//                    throw new IllegalArgumentException("형식에 맞지않는 닉네임입니다.");
+//                System.out.println(loginDto);
+//            }
 //            System.out.println("user"+user);
-            UsernamePasswordAuthenticationToken authenticationToken=
-            new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword());
-//            System.out.println("토큰" +authenticationToken);
+        } catch (IOException e) {
+            System.out.println("눌값 에러입니다~");
+            throw new RuntimeException(e);
+        }
+        System.out.println("제이슨 로그인 데이타"+loginDto);
+//        userService.loginProcess(loginDto);
+        UsernamePasswordAuthenticationToken authenticationToken=
+                new UsernamePasswordAuthenticationToken(  loginDto.getUsername(),loginDto.getPassword());
+            System.out.println("토큰" +authenticationToken);
 
-            //UserDtailServiceImpl 의 loadUserByUsername이 실행 됨
-            //wjdtkddlaus authentication가 리턴됨
-            //DB에 있는 username 과 password가 일치한다.
-            Authentication authentication=
-                    authenticationManager.authenticate(authenticationToken);
+        //UserDtailServiceImpl 의 loadUserByUsername이 실행 됨
+        //wjdtkddlaus authentication가 리턴됨
+        //DB에 있는 username 과 password가 일치한다.
+        Authentication authentication=
+                authenticationManager.authenticate(authenticationToken);
 //            System.out.println("???? : "+authentication);
 //            UserDetailsImpl userDetails= (UserDetailsImpl) authentication.getPrincipal();
 //            System.out.println("토큰 :??"+userDetails.getUser().getUsername());
-            return authentication;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return authentication;
     }
     //attemptAuthentication 실행 후 인증이 정상으로 되었으면 successfulAuthentication 함수 실행
     //JWT 토큰을 만들어서 REQUEST요청한 사용자에게 JWT토큰일 response해주먄 됨
@@ -74,6 +88,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withClaim("username", userDetails.getUser().getUsername())
                 .sign(Algorithm.HMAC512(JwtProperties.SECRET));
 
+
         response.addHeader(JwtProperties.HEADER_STRING,JwtProperties.TOKEN_PREFIX+jwtToken);
+//        chain.doFilter(request,response);
     }
 }

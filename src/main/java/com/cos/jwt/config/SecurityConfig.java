@@ -5,6 +5,7 @@ import com.cos.jwt.fllter.MyFIlter;
 import com.cos.jwt.jwt.JwtAuthenticationFilter;
 import com.cos.jwt.jwt.JwtAuthorizationFilter;
 import com.cos.jwt.repository.UserRepository;
+import com.cos.jwt.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,7 @@ import javax.servlet.Filter;
 public class SecurityConfig {
     private final CorsFilter corsFilter;
     private final UserRepository userRepository;
+//    private final UserService userService;
     @Bean//해당 메서드의 리턴되는 오브젝트를 ioc로 등록해준다
     public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -38,7 +40,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.addFilterBefore(new MyFIlter(), UsernamePasswordAuthenticationFilter.class);
         // CSRF protection 을 비활성화
         http.csrf().disable(); // csrf 보안 토큰 disable처리.
         http
@@ -50,8 +51,8 @@ public class SecurityConfig {
         .and()
         .authorizeRequests() // 요청에 대한 사용권한 체크
         .antMatchers("/api/admin/**").hasRole("ADMIN")
-        .antMatchers("/api/user/**").hasRole("USER")
-        .anyRequest().permitAll();//나머지는 모두 사용 가능.
+        .antMatchers("/api/user/**").hasAnyRole("USER","ADMIN")
+        .anyRequest().authenticated();//나머지는 모두 사용 가능.
 
         return http.build();
     }

@@ -47,7 +47,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         String username =
                 JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(jwtToken).getClaim("username").asString();
         if(username!=null){
-            User userEntity = userRepository.findByUsername(username);
+            User userEntity = userRepository.findByUsername(username).orElseThrow(()->new IllegalArgumentException("정보 없음"));
             UserDetailsImpl userDetails = new UserDetailsImpl(userEntity);
 
             //Jwt 토큰 서명을 통해서 서명이 정상이면 AUTHENTICATION 객체를 만들어준다
