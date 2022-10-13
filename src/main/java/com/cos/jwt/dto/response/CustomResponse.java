@@ -1,4 +1,4 @@
-package com.cos.jwt.dto;
+package com.cos.jwt.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,9 +24,9 @@ public class CustomResponse<T> {
     public static <T> CustomResponse<T> success(T data){
         return new CustomResponse<>(true,data,null);
     }
-    public static <T> CustomResponse<T> successHeader(T data){
-        return new CustomResponse<>(true, data, null);
-    }
+//    public static <T> CustomResponse<T> successHeader(T data){
+//        return new CustomResponse<>(true, data, null);
+//    }
     public static <T> CustomResponse<T> fail(String code, String message){
         return new CustomResponse<>(false, null, new Error(code, message));
     }

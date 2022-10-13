@@ -1,4 +1,4 @@
-package com.cos.jwt.dto;
+package com.cos.jwt.dto.request;
 
 import com.cos.jwt.model.User;
 import lombok.Data;

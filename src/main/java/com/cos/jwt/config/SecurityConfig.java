@@ -4,6 +4,7 @@ package com.cos.jwt.config;
 import com.cos.jwt.fllter.MyFIlter;
 import com.cos.jwt.jwt.JwtAuthenticationFilter;
 import com.cos.jwt.jwt.JwtAuthorizationFilter;
+import com.cos.jwt.repository.RefreshRepository;
 import com.cos.jwt.repository.UserRepository;
 import com.cos.jwt.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import javax.servlet.Filter;
 public class SecurityConfig {
     private final CorsFilter corsFilter;
     private final UserRepository userRepository;
+    private final RefreshRepository refreshRepository;
 //    private final UserService userService;
     @Bean//해당 메서드의 리턴되는 오브젝트를 ioc로 등록해준다
     public BCryptPasswordEncoder passwordEncoder(){
@@ -43,6 +45,9 @@ public class SecurityConfig {
         // CSRF protection 을 비활성화
         http.csrf().disable(); // csrf 보안 토큰 disable처리.
         http
+        .exceptionHandling()
+//                .accessDeniedHandler()
+        .and()
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 토큰 기반 인증이므로 세션 역시 사용하지 않겠다.
         .and()
         .httpBasic().disable() // rest api 만을 고려하여 기본 인증 설정은 해제하겠다.
@@ -52,7 +57,7 @@ public class SecurityConfig {
         .authorizeRequests() // 요청에 대한 사용권한 체크
         .antMatchers("/api/admin/**").hasRole("ADMIN")
         .antMatchers("/api/user/**").hasAnyRole("USER","ADMIN")
-        .anyRequest().authenticated();//나머지는 모두 사용 가능.
+        .anyRequest().permitAll();//나머지는 모두 사용 가능.
 
         return http.build();
     }
@@ -62,7 +67,7 @@ public class SecurityConfig {
             AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
             http
                     .addFilter(corsFilter)//코스 정책 무시 하는 필터  번외 :@CrossOrigin(인증 X을 떄만) 인증이 필요하면 필터에 등록해서 인증해야함.
-                    .addFilter(new JwtAuthenticationFilter(authenticationManager))
+                    .addFilter(new JwtAuthenticationFilter(authenticationManager,refreshRepository))
                     .addFilter(new JwtAuthorizationFilter(authenticationManager,userRepository));
         }
     }

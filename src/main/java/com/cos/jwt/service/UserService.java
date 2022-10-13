@@ -1,7 +1,7 @@
 package com.cos.jwt.service;
 
-import com.cos.jwt.dto.CustomResponse;
-import com.cos.jwt.dto.JoinDto;
+import com.cos.jwt.dto.response.CustomResponse;
+import com.cos.jwt.dto.request.JoinDto;
 import com.cos.jwt.model.User;
 import com.cos.jwt.model.UserRoleEnum;
 import com.cos.jwt.repository.UserRepository;
@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 
@@ -29,11 +30,11 @@ public class UserService {
         String username = requestDto.getUsername();
         System.out.println("123123"+username);
 
-        User found = userRepository.findByUsername(username).orElseThrow(()->new NullPointerException("정보가 없습니다."));
+        Optional<User> found = userRepository.findByUsername(username);
         System.out.println("회원가입 디비 값"+found);
 
         Pattern pattern1 = Pattern.compile("^([a-zA-Z0-9]*)$");
-        if (found!=null) {
+        if (found.isPresent()) {
             System.out.println("에러가 왜뜨니");
             throw new IllegalArgumentException("중복된 사용자 ID 가 존재합니다.");
         }

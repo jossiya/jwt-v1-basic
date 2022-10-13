@@ -1,14 +1,18 @@
 package com.cos.jwt.model;
 
-import com.cos.jwt.dto.JoinDto;
+
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
+
 import java.util.List;
 
-@Data
+//@Data
+@Getter
+@Setter
 @Entity(name = "users")
 @NoArgsConstructor // 기본 생성자를 만들어줍니다.
 public class User extends Timestamped{
@@ -25,8 +29,8 @@ public class User extends Timestamped{
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
-    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
-    private List<Notice> notices;
+//    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
+//    private List<Notice> notices;
 
     //권환 여러개 인 경우 사용
     public User(String username, String password,UserRoleEnum role) {

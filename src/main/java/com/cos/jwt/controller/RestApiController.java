@@ -1,15 +1,10 @@
 package com.cos.jwt.controller;
 
-import com.cos.jwt.dto.CustomResponse;
-import com.cos.jwt.dto.JoinDto;
-import com.cos.jwt.dto.LoginDto;
-import com.cos.jwt.model.User;
+import com.cos.jwt.dto.response.CustomResponse;
+import com.cos.jwt.dto.request.JoinDto;
 import com.cos.jwt.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,10 +27,5 @@ public class RestApiController {
     public CustomResponse join(@RequestBody JoinDto joinDto){
         return userService.joinUser(joinDto);
     }
-//    @PostMapping("/api/user/login")
-//    public CustomResponse<LoginDto> login(@RequestBody LoginDto loginDto, HttpServletResponse response){
-//        System.out.println("http : "+response);
-//        System.out.println("loginDto = " + loginDto);
-//        return CustomResponse.success(loginDto);
-//    }
+
 }

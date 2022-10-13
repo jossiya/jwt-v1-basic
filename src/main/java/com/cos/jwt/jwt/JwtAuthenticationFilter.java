@@ -3,12 +3,16 @@ package com.cos.jwt.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.cos.jwt.auth.UserDetailsImpl;
-import com.cos.jwt.dto.LoginDto;
-import com.cos.jwt.model.User;
-import com.cos.jwt.service.UserService;
+import com.cos.jwt.dto.request.LoginDto;
+import com.cos.jwt.model.Token;
+import com.cos.jwt.repository.RefreshRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import org.json.simple.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,8 +24,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.regex.Pattern;
 
 
 //스프링 시큐리티에서 UsernamePasswordAuthenticationFilter가 있음
@@ -30,6 +35,8 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
+    private final RefreshRepository refreshRepository;
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;
 //    private final UserService userService;
 
 
@@ -81,6 +88,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
 
+
+        //어세스
         String jwtToken = JWT.create()
                 .withSubject(userDetails.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis()+JwtProperties.EXPIRATION_TIME))
@@ -88,8 +97,38 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withClaim("username", userDetails.getUser().getUsername())
                 .sign(Algorithm.HMAC512(JwtProperties.SECRET));
 
+        //리프레시
+        String refreshToken =  JWT.create()
+                .withSubject(userDetails.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis()+JwtProperties.EXPIRATION_TIME2))
+                .sign(Algorithm.HMAC512(JwtProperties.SECRET2));
+        Token token = Token.builder()
+                .id(userDetails.getUser().getId())
+                .user(userDetails.getUser())
+                .value(refreshToken)
+                .build();
+        refreshRepository.save(token);
 
         response.addHeader(JwtProperties.HEADER_STRING,JwtProperties.TOKEN_PREFIX+jwtToken);
+        response.addHeader(JwtProperties.HEADER_STRING2,JwtProperties.TOKEN_PREFIX+refreshToken);
+
 //        chain.doFilter(request,response);
+        try( PrintWriter writer = response.getWriter()) {
+
+            JSONObject json = new JSONObject();
+            json.put("success","true");
+            json.put("username",userDetails.getUser().getUsername());
+            json.put("password",userDetails.getUser().getPassword());
+
+
+            response.setStatus(HttpStatus.ACCEPTED.value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+
+            writer.write(json.toString());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

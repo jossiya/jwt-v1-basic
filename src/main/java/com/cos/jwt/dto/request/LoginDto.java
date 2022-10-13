@@ -1,8 +1,10 @@
-package com.cos.jwt.dto;
+package com.cos.jwt.dto.request;
 
 import lombok.Data;
+import lombok.NonNull;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 @Data
